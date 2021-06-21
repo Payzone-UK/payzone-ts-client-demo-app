@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.StrictMode;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_main);
     }
 
@@ -32,9 +35,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void registerDevice() throws JSONException {
         JSONObject obj = new JSONObject();
-        obj.put("barcode", "12349878388288288222219");
-        obj.put("deviceId", "SN10289288299");
-        obj.put("tId", "24728288");
+        obj.put("barcode", "384279439249691");
+        obj.put("deviceId", "1545D2053");
+        obj.put("tId", "49691");
         boolean success =  apiClient.registerDevice(obj);
         System.out.println("## Device Registration sent to service queue: "+success);
 //        System.out.println("## From Server: "+messageResponseHandler.responseObject);
