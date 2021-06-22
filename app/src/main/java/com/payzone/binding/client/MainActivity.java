@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void registerDevice() throws JSONException {
         JSONObject obj = new JSONObject();
-        obj.put("barcode", "384279439249691");
+        obj.put("barcode", "267693243349691");
         obj.put("deviceId", "1545D2053");
         obj.put("tId", "49691");
         boolean success =  apiClient.registerDevice(obj);
@@ -43,19 +43,25 @@ public class MainActivity extends AppCompatActivity {
 //        System.out.println("## From Server: "+messageResponseHandler.responseObject);
     }
 
-//    public void initTransaction() throws JSONException {
-//        JSONObject obj = new JSONObject();
-//        boolean success =  apiClient.initTransaction(obj);
-//        System.out.println("## Transaction init sent to service queue: "+success);
-////        System.out.println("## From Server: "+messageResponseHandler.responseObject);
-//    }
+    public void initTransaction() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("transactionSource", 0);
+        obj.put("transactionGuid", "bfd0f250-66ce-11eb-863b-a5942ff6aec7");
+        obj.put("productId", "3789");
+        obj.put("transactionAmount", 1000);
+        obj.put("barcode", "63385450042016567880");
+        boolean success =  apiClient.initTransaction(obj);
+        System.out.println("## Transaction init sent to service queue: "+success);
+//        System.out.println("## From Server: "+messageResponseHandler.responseObject);
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
         initService();
         try {
-            registerDevice();
+//            registerDevice();
+            initTransaction();
         } catch (JSONException e) {
             e.printStackTrace();
         }
