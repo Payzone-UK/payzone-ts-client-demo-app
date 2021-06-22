@@ -43,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
 //        System.out.println("## From Server: "+messageResponseHandler.responseObject);
     }
 
+//    public void initTransaction() throws JSONException {
+//        JSONObject obj = new JSONObject();
+//        boolean success =  apiClient.initTransaction(obj);
+//        System.out.println("## Transaction init sent to service queue: "+success);
+////        System.out.println("## From Server: "+messageResponseHandler.responseObject);
+//    }
+
     @Override
     protected void onStart() {
         super.onStart();
