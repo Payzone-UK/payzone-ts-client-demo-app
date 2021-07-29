@@ -55,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
 //        System.out.println("## From Server: "+messageResponseHandler.responseObject);
     }
 
+    public void storeCashierId() {
+        boolean success =  apiClient.storeCashierId("1234");
+        System.out.println("## Store Cashier ID sent to service queue: "+success);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
