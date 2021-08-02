@@ -13,6 +13,8 @@ import org.json.JSONObject;
 import com.payzone.transaction.client.ApiClient;
 import com.payzone.transaction.client.MessageConstants;
 
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity {
     ApiClient apiClient;
     ResponseHandler responseHandler;
@@ -64,10 +66,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         initService();
+
+
         try {
+
 //            registerDevice();
-            initTransaction();
-        } catch (JSONException e) {
+//            initTransaction();
+
+            storeCashierId();
+
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -106,6 +115,10 @@ public class MainActivity extends AppCompatActivity {
                 case MessageConstants.MSG_MARK_RECEIPT_PRINTED:
                     response = msg.getData().getString(MessageConstants.RESP_MARK_RECEIPT_PRINTED);
                     System.out.println("## Marked Receipt Printed Response = "+response);
+                    break;
+                case MessageConstants.MSG_STORE_CID:
+                    response = msg.getData().getString(MessageConstants.RESP_STORE_CID);
+                    System.out.println("## Store Cashier ID Response = "+response);
                     break;
                 default:
                     super.handleMessage(msg);
