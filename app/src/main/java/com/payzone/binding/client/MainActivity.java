@@ -162,51 +162,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static String decompress(String zipText) throws IOException {
-        byte[] compressed = Base64.decode(zipText, Base64.DEFAULT);
-        if (compressed.length > 4)
-        {
-            GZIPInputStream gzipInputStream = new GZIPInputStream(
-                    new ByteArrayInputStream(compressed, 4,
-                            compressed.length - 4));
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            for (int value = 0; value != -1;) {
-                value = gzipInputStream.read();
-                if (value != -1) {
-                    baos.write(value);
-                }
-            }
-            gzipInputStream.close();
-            baos.close();
-            String sReturn = new String(baos.toByteArray(), "UTF-8");
-            return sReturn;
-        }
-        else
-        {
-            return "";
-        }
-    }
-
     public class ResponseHandler extends Handler {
-        public JSONObject responseObject;
-
         @Override
         public void handleMessage(Message msg) {
             String response;
             switch (msg.what) {
                 case MessageConstants.MSG_REGISTER_DEVICE:
-                    response = msg.getData().getString(MessageConstants.RESP_REGISTER_DEVICE);
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_REGISTER_DEVICE));
                     System.out.println("## Register Device Response = "+response);
                     break;
                 case MessageConstants.MSG_INIT_TRANSACTION:
-                    response = msg.getData().getString(MessageConstants.RESP_INIT_TRANSACTION);
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_INIT_TRANSACTION));
                     System.out.println("## Transaction Initialised Response = "+response);
                     break;
                 case MessageConstants.MSG_COMPLETE_TRANS:
                     try {
-                        response = msg.getData().getString(MessageConstants.RESP_COMPLETE_TRANS);
-                        response = decompress(response);
+                        response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_COMPLETE_TRANS));
                         System.out.println("## Complete Transaction Response = " + response);
 
                         JSONObject obj = new JSONObject(response);
@@ -216,19 +187,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 case MessageConstants.MSG_MARK_TRANS_SUCCESS:
-                    response = msg.getData().getString(MessageConstants.RESP_MARK_TRANS_SUCCESS);
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_MARK_TRANS_SUCCESS));
                     System.out.println("## Marked Successful Response = "+response);
                     break;
                 case MessageConstants.MSG_MARK_TRANS_FAILED:
-                    response = msg.getData().getString(MessageConstants.RESP_MARK_TRANS_FAILED);
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_MARK_TRANS_FAILED));
                     System.out.println("## Marked Failed Response = "+response);
                     break;
                 case MessageConstants.MSG_MARK_RECEIPT_PRINTED:
-                    response = msg.getData().getString(MessageConstants.RESP_MARK_RECEIPT_PRINTED);
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_MARK_RECEIPT_PRINTED));
                     System.out.println("## Marked Receipt Printed Response = "+response);
                     break;
                 case MessageConstants.MSG_STORE_CID:
-                    response = msg.getData().getString(MessageConstants.RESP_STORE_CID);
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_STORE_CID));
                     System.out.println("## Store Cashier ID Response = "+response);
                     break;
                 default:
