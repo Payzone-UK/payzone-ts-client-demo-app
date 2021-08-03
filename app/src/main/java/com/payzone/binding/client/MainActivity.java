@@ -42,20 +42,73 @@ public class MainActivity extends AppCompatActivity {
         obj.put("tId", "49691");
         boolean success =  apiClient.registerDevice(obj);
         System.out.println("## Device Registration sent to service queue: "+success);
-//        System.out.println("## From Server: "+messageResponseHandler.responseObject);
+    }
+
+    public void startSession() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("pin", "6632");
+        boolean success =  apiClient.startSession(obj);
+        System.out.println("## Start session sent to service queue: "+success);
     }
 
     public void initTransaction() throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put("clientRef", "29fa53da-fea0-47b3-b7b0-ff564ed76324");
 //        obj.put("transactionSource", 0);
-        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aec8");
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
 //        obj.put("productId", "3789");
         obj.put("transactionAmount", 1000);
         obj.put("barcode", "63385450042016567880");
         boolean success =  apiClient.initTransaction(obj);
         System.out.println("## Transaction init sent to service queue: "+success);
-//        System.out.println("## From Server: "+messageResponseHandler.responseObject);
+    }
+
+    public void completeTransaction() throws JSONException {
+        JSONObject obj = new JSONObject();
+
+        JSONObject extraJsonInfo = new JSONObject();
+        extraJsonInfo.put("basketId", "0423502170");
+        extraJsonInfo.put("dateReceived", "2021-08-03");
+        obj.put("extra_json_info", extraJsonInfo);
+
+        obj.put("ticketNumber", "PP001002");
+        obj.put("id", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
+        obj.put("responseCode", "00");
+
+        boolean success =  apiClient.completeTransaction(obj);
+        System.out.println("## Transaction complete sent to service queue: "+success);
+    }
+
+    public void completeTransactionFailed() throws JSONException {
+        JSONObject obj = new JSONObject();
+
+        obj.put("smartMeterErrorText", "Failed reason");
+        obj.put("id", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
+        obj.put("responseCode", "05");
+
+        boolean success =  apiClient.completeTransaction(obj);
+        System.out.println("## Transaction complete failed sent to service queue: "+success);
+    }
+
+    public void markTransactionSuccess() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
+        boolean success =  apiClient.markTransactionSuccess(obj);
+        System.out.println("## Mark transaction success sent to service queue: "+success);
+    }
+
+    public void markTransactionFailed() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
+        boolean success =  apiClient.markTransactionFailed(obj);
+        System.out.println("## Mark transaction failed sent to service queue: "+success);
+    }
+
+    public void markReceiptPrinted() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
+        boolean success =  apiClient.markReceiptPrinted(obj);
+        System.out.println("## Mark receipt printed sent to service queue: "+success);
     }
 
     public void storeCashierId() {
@@ -76,11 +129,17 @@ public class MainActivity extends AppCompatActivity {
 
         try {
 
-//            registerDevice();
-            storeCashierId();
-//            getApiToken();
-//            initTransaction();
+//          registerDevice();
+//          startSession();
 
+//          storeCashierId();
+//          getApiToken();
+//          initTransaction();
+//          completeTransaction();
+//          completeTransactionFailed();
+ //         markTransactionSuccess();
+//          markTransactionFailed();
+ //         markReceiptPrinted();
 
 
         } catch (Exception e) {
