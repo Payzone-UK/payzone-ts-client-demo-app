@@ -7,13 +7,20 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.StrictMode;
+import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.payzone.transaction.client.ApiClient;
 import com.payzone.transaction.client.MessageConstants;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Date;
+import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
     ApiClient apiClient;
@@ -135,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 //          storeCashierId();
 //          getApiToken();
 //          initTransaction();
-//          completeTransaction();
+          completeTransaction();
 //          completeTransactionFailed();
  //         markTransactionSuccess();
 //          markTransactionFailed();
@@ -155,6 +162,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public static String decompress(String zipText) throws IOException {
+        byte[] compressed = Base64.decode(zipText, Base64.DEFAULT);
+        if (compressed.length > 4)
+        {
+            GZIPInputStream gzipInputStream = new GZIPInputStream(
+                    new ByteArrayInputStream(compressed, 4,
+                            compressed.length - 4));
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            for (int value = 0; value != -1;) {
+                value = gzipInputStream.read();
+                if (value != -1) {
+                    baos.write(value);
+                }
+            }
+            gzipInputStream.close();
+            baos.close();
+            String sReturn = new String(baos.toByteArray(), "UTF-8");
+            return sReturn;
+        }
+        else
+        {
+            return "";
+        }
+    }
+
     public class ResponseHandler extends Handler {
         public JSONObject responseObject;
 
@@ -169,6 +202,18 @@ public class MainActivity extends AppCompatActivity {
                 case MessageConstants.MSG_INIT_TRANSACTION:
                     response = msg.getData().getString(MessageConstants.RESP_INIT_TRANSACTION);
                     System.out.println("## Transaction Initialised Response = "+response);
+                    break;
+                case MessageConstants.MSG_COMPLETE_TRANS:
+                    try {
+                        response = msg.getData().getString(MessageConstants.RESP_COMPLETE_TRANS);
+                        response = decompress(response);
+                        System.out.println("## Complete Transaction Response = " + response);
+
+                        JSONObject obj = new JSONObject(response);
+                        System.out.println("## CUSTOMER RECEIPT LENGTH: "+obj.getString("customerReceipt").length());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case MessageConstants.MSG_MARK_TRANS_SUCCESS:
                     response = msg.getData().getString(MessageConstants.RESP_MARK_TRANS_SUCCESS);
