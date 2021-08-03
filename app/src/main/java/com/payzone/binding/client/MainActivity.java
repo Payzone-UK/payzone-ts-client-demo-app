@@ -47,9 +47,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void initTransaction() throws JSONException {
         JSONObject obj = new JSONObject();
-        obj.put("transactionSource", 0);
-        obj.put("transactionGuid", "bfd0f250-66ce-11eb-863b-a5942ff6aec7");
-        obj.put("productId", "3789");
+        obj.put("clientRef", "29fa53da-fea0-47b3-b7b0-ff564ed76324");
+//        obj.put("transactionSource", 0);
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aec8");
+//        obj.put("productId", "3789");
         obj.put("transactionAmount", 1000);
         obj.put("barcode", "63385450042016567880");
         boolean success =  apiClient.initTransaction(obj);
@@ -58,8 +59,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void storeCashierId() {
-        boolean success =  apiClient.storeCashierId("1234");
+        boolean success =  apiClient.storeCashierId("249");
         System.out.println("## Store Cashier ID sent to service queue: "+success);
+    }
+
+    public void getApiToken() {
+        boolean success =  apiClient.getToken("4863025");
+        System.out.println("## getApiToken: "+success);
     }
 
     @Override
@@ -71,9 +77,10 @@ public class MainActivity extends AppCompatActivity {
         try {
 
 //            registerDevice();
+            storeCashierId();
+//            getApiToken();
 //            initTransaction();
 
-            storeCashierId();
 
 
         } catch (Exception e) {
