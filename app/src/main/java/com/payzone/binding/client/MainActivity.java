@@ -141,10 +141,11 @@ public class MainActivity extends AppCompatActivity {
 
 //          storeCashierId();
 //          getApiToken();
+
 //          initTransaction();
-          completeTransaction();
+ //         completeTransaction();
 //          completeTransactionFailed();
- //         markTransactionSuccess();
+//          markTransactionSuccess();
 //          markTransactionFailed();
  //         markReceiptPrinted();
 
