@@ -123,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("## Store Cashier ID sent to service queue: "+success);
     }
 
+    public void isTransactionReady() {
+        boolean success =  apiClient.isTransactionReady();
+        System.out.println("## Is Transaction Ready sent to service queue: "+success);
+    }
+
     public void getApiToken() {
         boolean success =  apiClient.getToken("4863025");
         System.out.println("## getApiToken: "+success);
@@ -141,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
 //          storeCashierId();
 //          getApiToken();
+//          isTransactionReady();
 
 //          initTransaction();
  //         completeTransaction();
@@ -202,6 +208,10 @@ public class MainActivity extends AppCompatActivity {
                 case MessageConstants.MSG_STORE_CID:
                     response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_STORE_CID));
                     System.out.println("## Store Cashier ID Response = "+response);
+                    break;
+                case MessageConstants.MSG_IS_TRANSACTION_READY:
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_IS_TRANSACTION_READY));
+                    System.out.println("## Is Transaction Ready Response = "+response);
                     break;
                 default:
                     super.handleMessage(msg);
