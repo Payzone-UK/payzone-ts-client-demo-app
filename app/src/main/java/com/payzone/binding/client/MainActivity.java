@@ -1,5 +1,9 @@
 package com.payzone.binding.client;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -19,6 +23,23 @@ public class MainActivity extends AppCompatActivity {
     ApiClient apiClient;
     ResponseHandler responseHandler;
     Messenger replyMessenger;
+    private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Boolean isKeyInserted = intent.getExtras().getBoolean(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED);
+            sendKeyInserted(isKeyInserted.toString());
+        }
+    };
+
+    private void sendKeyInserted(String isKeyInserted) {
+        Log.d("sendKeyInserted", "sendKeyInserted: "+ isKeyInserted);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mHandleMessageReceiver);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_main);
+        registerReceiver(mHandleMessageReceiver, new IntentFilter(MessageConstants.ACTION_KEY_INSERTED));
     }
 
     private void initService() {
@@ -155,6 +177,14 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("## ReadKey 2: " + success);
     }
 
+    public void reversal() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("productId", "11");
+        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
+        boolean success = apiClient.reversal(obj);
+        System.out.println("## Reversal: " + success);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -163,22 +193,23 @@ public class MainActivity extends AppCompatActivity {
 
         try {
 
-//          registerDevice();
-//          startSession();
-
-//          storeCashierId();
-//          getApiToken();
-//          isTransactionReady();
-
-//          initTransaction();
-//         completeTransaction();
-//          completeTransactionFailed();
-//          markTransactionSuccess();
-//          markTransactionFailed();
-//         markReceiptPrinted();
+//            registerDevice();
+//            startSession();
+//
+//            storeCashierId();
+//            getApiToken();
+//            isTransactionReady();
+//
+//            initTransaction();
+//            completeTransaction();
+//            completeTransactionFailed();
+//            markTransactionSuccess();
+//            markTransactionFailed();
+//            markReceiptPrinted();
 //            isKeyInserted();
 //            readKey();
 //            addCredit();
+//            reversal();
 //            rti();
 
 
@@ -251,6 +282,10 @@ public class MainActivity extends AppCompatActivity {
                 case MessageConstants.MSG_TALEXUS_RTI:
                     response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_RTI));
                     System.out.println("## Talexus RTI Response = " + response);
+                    break;
+                case MessageConstants.MSG_TALEXUS_REVERSE_CREDIT:
+                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_REVERSE_CREDIT));
+                    System.out.println("## Talexus Reverse Response = " + response);
                     break;
                 default:
                     super.handleMessage(msg);
