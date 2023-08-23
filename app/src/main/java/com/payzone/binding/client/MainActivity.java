@@ -10,6 +10,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.StrictMode;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,22 +24,23 @@ public class MainActivity extends AppCompatActivity {
     ApiClient apiClient;
     ResponseHandler responseHandler;
     Messenger replyMessenger;
-    private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Boolean isKeyInserted = intent.getExtras().getBoolean(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED);
-            sendKeyInserted(isKeyInserted.toString());
-        }
-    };
-
-    private void sendKeyInserted(String isKeyInserted) {
-        Log.d("sendKeyInserted", "sendKeyInserted: "+ isKeyInserted);
-    }
+//    private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Boolean isKeyInserted = intent.getExtras().getBoolean(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED);
+//            sendKeyInserted(isKeyInserted.toString());
+//        }
+//    };
+//
+//    private void sendKeyInserted(String isKeyInserted) {
+//        Toast.makeText(getApplicationContext(), "Key Inserted :::::: "+ isKeyInserted, Toast.LENGTH_LONG).show();
+//        Log.d("sendKeyInserted", "sendKeyInserted: "+ isKeyInserted);
+//    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mHandleMessageReceiver);
+//        unregisterReceiver(mHandleMessageReceiver);
     }
 
     @Override
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_main);
-        registerReceiver(mHandleMessageReceiver, new IntentFilter(MessageConstants.ACTION_KEY_INSERTED));
+//        registerReceiver(mHandleMessageReceiver, new IntentFilter(MessageConstants.ACTION_KEY_INSERTED));
     }
 
     private void initService() {
@@ -149,41 +151,41 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("## getApiToken: " + success);
     }
 
-    public void isKeyInserted() {
-        boolean success = apiClient.isKeyInserted();
-        System.out.println("## getApiToken: " + success);
-    }
-
-    public void readKey() throws JSONException {
-        boolean success = apiClient.readKey();
-        System.out.println("## readKey: " + success);
-    }
-
-    public void addCredit() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("amount", "300");
-        obj.put("productId", "12");
-        obj.put("keyImage", "333346574081DDBD0004B1B0130600B9000A77CB0000D3AC41E5FFAB4070C140990B440EC800840E040E040E040E040E040E040E040E440E040E440E040E040E22010100261E0D07000000000000395A000000000000000000000000800000180000000000005FE30000000000000000000000000000000000000000000056BC");
-        boolean success = apiClient.addCredit(obj);
-        System.out.println("## Talexus add credit: " + success);
-    }
-
-    public void rti() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("rtiReference", "00757141");
-        obj.put("productId", "11");
-        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
-        boolean success = apiClient.rti(obj);
-        System.out.println("## ReadKey 2: " + success);
-    }
-
-    public void reversal() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("productId", "11");
-        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
-        boolean success = apiClient.reversal(obj);
-        System.out.println("## Reversal: " + success);
-    }
+//    public void isKeyInserted() {
+//        boolean success = apiClient.isKeyInserted();
+//        System.out.println("## getApiToken: " + success);
+//    }
+//
+//    public void readKey() throws JSONException {
+//        boolean success = apiClient.readKey();
+//        System.out.println("## readKey: " + success);
+//    }
+//
+//    public void addCredit() throws JSONException {
+//        JSONObject obj = new JSONObject();
+//        obj.put("amount", "300");
+//        obj.put("productId", "12");
+//        obj.put("keyImage", "55552297002156132911DC34380A1F1CFE1E69AAAA0012673A40FCA500006C00990B040004008400040004000400040004000400040044008400040004000400220101001E0B00000000000000002738000000002738000023072005CB5D0000000000000000453ACB5D000000184C180006000023080706200F21FC7F433EA7");
+//        boolean success = apiClient.addCredit(obj);
+//        System.out.println("## Talexus add credit: " + success);
+//    }
+//
+//    public void rti() throws JSONException {
+//        JSONObject obj = new JSONObject();
+//        obj.put("rtiReference", "00757141");
+//        obj.put("productId", "11");
+//        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
+//        boolean success = apiClient.rti(obj);
+//        System.out.println("## ReadKey 2: " + success);
+//    }
+//
+//    public void reversal() throws JSONException {
+//        JSONObject obj = new JSONObject();
+//        obj.put("productId", "11");
+//        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
+//        boolean success = apiClient.reversal(obj);
+//        System.out.println("## Reversal: " + success);
+//    }
 
     @Override
     protected void onStart() {
@@ -193,19 +195,19 @@ public class MainActivity extends AppCompatActivity {
 
         try {
 
-//            registerDevice();
-//            startSession();
-//
-//            storeCashierId();
-//            getApiToken();
-//            isTransactionReady();
-//
-//            initTransaction();
-//            completeTransaction();
-//            completeTransactionFailed();
-//            markTransactionSuccess();
-//            markTransactionFailed();
-//            markReceiptPrinted();
+          registerDevice();
+//          startSession();
+
+//          storeCashierId();
+          getApiToken();
+//          isTransactionReady();
+
+//          initTransaction();
+//         completeTransaction();
+//          completeTransactionFailed();
+//          markTransactionSuccess();
+//          markTransactionFailed();
+//         markReceiptPrinted();
 //            isKeyInserted();
 //            readKey();
 //            addCredit();
@@ -267,26 +269,26 @@ public class MainActivity extends AppCompatActivity {
                     response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_IS_TRANSACTION_READY));
                     System.out.println("## Is Transaction Ready Response = " + response);
                     break;
-                case MessageConstants.MSG_TALEXUS_IS_KEY_INSERTED:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED));
-                    System.out.println("## Is Talexus key inserted Response = " + response);
-                    break;
-                case MessageConstants.MSG_TALEXUS_READ_KEY:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_READ_KEY));
-                    System.out.println("## Talexus Read key Response = " + response);
-                    break;
-                case MessageConstants.MSG_TALEXUS_ADD_CREDIT:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_ADD_CREDIT));
-                    System.out.println("## Talexus Add credit Response = " + response);
-                    break;
-                case MessageConstants.MSG_TALEXUS_RTI:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_RTI));
-                    System.out.println("## Talexus RTI Response = " + response);
-                    break;
-                case MessageConstants.MSG_TALEXUS_REVERSE_CREDIT:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_REVERSE_CREDIT));
-                    System.out.println("## Talexus Reverse Response = " + response);
-                    break;
+//                case MessageConstants.MSG_TALEXUS_IS_KEY_INSERTED:
+//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED));
+//                    System.out.println("## Is Talexus key inserted Response = " + response);
+//                    break;
+//                case MessageConstants.MSG_TALEXUS_READ_KEY:
+//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_READ_KEY));
+//                    System.out.println("## Talexus Read key Response = " + response);
+//                    break;
+//                case MessageConstants.MSG_TALEXUS_ADD_CREDIT:
+//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_ADD_CREDIT));
+//                    System.out.println("## Talexus Add credit Response = " + response);
+//                    break;
+//                case MessageConstants.MSG_TALEXUS_RTI:
+//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_RTI));
+//                    System.out.println("## Talexus RTI Response = " + response);
+//                    break;
+//                case MessageConstants.MSG_TALEXUS_REVERSE_CREDIT:
+//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_REVERSE_CREDIT));
+//                    System.out.println("## Talexus Reverse Response = " + response);
+//                    break;
                 default:
                     super.handleMessage(msg);
             }
