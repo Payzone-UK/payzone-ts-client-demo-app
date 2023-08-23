@@ -27,7 +27,10 @@ jobs:
         echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
         echo "cat github.properties"
         cat github.properties
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Upload APK
+      uses: actions/upload-artifact@v1
+      with:
+        name: apk
+        path: app/build/outputs/apk/debug/app-debug.apk 
