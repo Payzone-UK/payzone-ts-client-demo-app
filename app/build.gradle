@@ -20,17 +20,13 @@ android {
         println defaultConfig.versionName
     }
     tasks.register("appname") {
-        println "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}"
+        println "PayzoneTSDemo-${defaultConfig.versionName}"
     }
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             def buildType = variant.buildType.name
-            if (buildType == "release") {
-                outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}-${buildType}.apk"
-            } else {
-                outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}-${buildType}.apk"
-            }
+            outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}-${buildType}.apk"
         }
     }
 }
