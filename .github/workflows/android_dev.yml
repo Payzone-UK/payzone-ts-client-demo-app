@@ -44,11 +44,12 @@ jobs:
       - name: Retrieve App name
         run: |
           echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
+          echo ${{steps.app_name.outputs.APP_NAME}}
         id: app_name
       - name: Download APK from build
         uses: actions/download-artifact@v1
         with:
-          name: app/build/outputs/apk/debug/${{steps.app_name.outputs.APP_NAME}}.apk
+          name: app/build/outputs/apk/debug/${{steps.app_name.outputs.APP_NAME}}-debug.apk
       - name: Retrieve Tag
         run: |
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
