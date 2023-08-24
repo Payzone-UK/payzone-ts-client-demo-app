@@ -26,14 +26,14 @@ jobs:
           cat github.properties
       - name: Retrieve App name
         run: |
-          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)" >>
+          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
         id: app_name
       - name: Set App name
         run: |
           echo "version_name=${{steps.app_name.outputs.APP_NAME}}" >> $GITHUB_ENV
       - name: Retrieve Version name
         run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)" >>
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
         id: app_version
       - name: Set App name
         run: |
