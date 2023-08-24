@@ -26,28 +26,41 @@ jobs:
         cat github.properties
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Retrieve App name
+      run: |
+       echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
+      id: app_name
     - name: Upload APK
       uses: actions/upload-artifact@v1
       with:
-        name: apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: ${{steps.app_version.outputs.APP_NAME}}
+        path: app/build/outputs/apk/debug/${{steps.app_version.outputs.APP_NAME}}.apk
   release:
     name: Release APK
     needs: build_apk
     runs-on: ubuntu-latest
     steps:
+      - name: Retrieve App name
+        run: |
+          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
+        id: app_name
       - name: Download APK from build
         uses: actions/download-artifact@v1
         with:
-          name: apk
+          name: app/build/outputs/apk/debug/${{steps.app_version.outputs.APP_NAME}}.apk
+      - name: Retrieve Tag
+        run: |
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
+        id: app_version
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v1.0.0
-          release_name: Release  v1.0.0
+          tag_name: ${{steps.app_version.outputs.VERSION_NAME}}
+          release_name: Release  ${{steps.app_version.outputs.VERSION_NAME}}
+
       - name: Upload Release APK
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.1
@@ -55,6 +68,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: apk/app-debug.apk
-          asset_name: app-debug.apk
+          asset_path: apk/${{steps.app_version.outputs.APP_NAME}}.apk
+          asset_name: ${{steps.app_version.outputs.APP_NAME}}.apk
           asset_content_type: application/zip
