@@ -30,12 +30,12 @@ jobs:
         id: app_name
       - name: Set App name
         run: |
-          echo "version_name=${{steps.app_name.outputs.APP_NAME}}" >> $GITHUB_ENV
+          echo "app_name=${{steps.app_name.outputs.APP_NAME}}" >> $GITHUB_ENV
       - name: Retrieve Version name
         run: |
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
         id: app_version
-      - name: Set App name
+      - name: Set Version name
         run: |
           echo "version_name=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
       - name: Build with Gradle
