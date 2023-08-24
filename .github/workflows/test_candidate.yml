@@ -32,14 +32,6 @@ jobs:
       - name: Set App name
         run: |
           echo "APP_NAME=${{steps.app_name.outputs.APP_NAME}}-debug.apk" >> $GITHUB_ENV
-
-      - name: Retrieve Version name
-        run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
-        id: app_version
-      - name: Set Version name
-        run: |
-          echo "VERSION_NAME=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
       - name: Build with Gradle
         run: ./gradlew build
       - name: Upload APK
