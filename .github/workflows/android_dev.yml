@@ -48,7 +48,7 @@ jobs:
       - name: Download APK from build
         uses: actions/download-artifact@v1
         with:
-          name: app/build/outputs/apk/debug/${{env.APP_NAME}}-debug.apk
+          name: ${{env.APP_NAME}}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
