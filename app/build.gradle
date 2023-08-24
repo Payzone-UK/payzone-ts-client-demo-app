@@ -17,40 +17,23 @@ android {
         }
     }
     tasks.register("versionName") {
-        variant.outputs.all { output ->
-            def versionName = variant.versionName
-            def versionCode = variant.versionCode
-            println "v" + versionName + " (" + versionCode + ")"
-            }
-        }
-    tasks.register("appname"){
-        variant.outputs.all { output ->
-            def versionName = variant.versionName
-            def versionCode = variant.versionCode
-            def buildType = variant.buildType.name
-            if (buildType == "release") {
-                outputFileName = "PayzoneTSDemo-${versionName}_${versionCode}-${buildType}-unsigned.apk"
-            } else {
-                outputFileName = "PayzoneTSDemo-${versionName}_${versionCode}-${buildType}.apk"
-            }
-            println outputFileName
-        }
+        println "v" + defaultConfig.versionName + " (" + defaultConfig.versionCode + ")"
+    }
+    tasks.register("appname") {
+        println "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}"
     }
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def versionName = variant.versionName
-            def versionCode = variant.versionCode
             def buildType = variant.buildType.name
             if (buildType == "release") {
-                outputFileName = "PayzoneTSDemo-${versionName}_${versionCode}-${buildType}-unsigned.apk"
+                outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}-${buildType}.apk"
             } else {
-                outputFileName = "PayzoneTSDemo-${versionName}_${versionCode}-${buildType}.apk"
+                outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}-${buildType}.apk"
             }
         }
     }
 }
-
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
