@@ -28,29 +28,25 @@ jobs:
       run: ./gradlew build
     - name: Retrieve App name
       run: |
-       echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
+        run: echo "APP_NAME=$(${{github.workspace}}/gradlew -q appName)" >> $GITHUB_ENV
       id: app_name
     - name: Upload APK
       uses: actions/upload-artifact@v1
       with:
-        name: ${{steps.app_version.outputs.APP_NAME}}
-        path: app/build/outputs/apk/debug/${{steps.app_version.outputs.APP_NAME}}.apk
+        name: ${{ env.APP_NAME }}
+        path: app/build/outputs/apk/debug/${{ env.APP_NAME }}.apk
   release:
     name: Release APK
     needs: build_apk
     runs-on: ubuntu-latest
     steps:
-      - name: Retrieve App name
-        run: |
-          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
-        id: app_name
       - name: Download APK from build
         uses: actions/download-artifact@v1
         with:
           name: app/build/outputs/apk/debug/${{steps.app_version.outputs.APP_NAME}}.apk
       - name: Retrieve Tag
         run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
+          run: echo "VERSION_NAME=$(${{github.workspace}}/gradlew -q versionName)" >> $GITHUB_ENV
         id: app_version
       - name: Create Release
         id: create_release
@@ -58,8 +54,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{steps.app_version.outputs.VERSION_NAME}}
-          release_name: Release  ${{steps.app_version.outputs.VERSION_NAME}}
+          tag_name: ${{ env.VERSION_NAME }}
+          release_name: Release  ${{ env.VERSION_NAME }}
 
       - name: Upload Release APK
         id: upload_release_asset
@@ -68,6 +64,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: apk/${{steps.app_version.outputs.APP_NAME}}.apk
-          asset_name: ${{steps.app_version.outputs.APP_NAME}}.apk
+          asset_path: apk/${{ env.APP_NAME }}.apk
+          asset_name: ${{ env.APP_NAME }}.apk
           asset_content_type: application/zip
