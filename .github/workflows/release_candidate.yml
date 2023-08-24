@@ -2,9 +2,9 @@ name: Release Candidate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "test" ]
 jobs:
-  build_apk:
+  build_and_release:
 
     runs-on: ubuntu-latest
 
@@ -30,7 +30,7 @@ jobs:
         id: app_name
       - name: Set App name
         run: |
-          echo "APP_NAME=${{steps.app_name.outputs.APP_NAME}}-release.apk" >> $GITHUB_ENV
+          echo "APP_NAME=${{steps.app_name.outputs.APP_NAME}}" >> $GITHUB_ENV
       - name: Retrieve Version name
         run: |
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
@@ -40,15 +40,6 @@ jobs:
           echo "VERSION_NAME=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
       - name: Build with Gradle
         run: ./gradlew build
-      - name: Upload APK
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{env.APP_NAME}}
-          path: app/build/outputs/apk/release/${{env.APP_NAME}}
-      - name: Download APK from build
-        uses: actions/download-artifact@v1
-        with:
-          name: ${{env.APP_NAME}}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -58,6 +49,17 @@ jobs:
           tag_name: v.${{env.VERSION_NAME}}
           release_name: Release  ${{env.VERSION_NAME}}
 
+      - name: Upload Debug APK
+        id: upload_release_asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/debug/*.apk
+          asset_name: ${{env.APP_NAME}}-debug.apk
+          asset_content_type: application/zip
+
       - name: Upload Release APK
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.1
@@ -65,6 +67,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/release/${{env.APP_NAME}}
-          asset_name: ${{env.APP_NAME}}
+          asset_path: app/build/outputs/apk/release/*.apk
+          asset_name: ${{env.APP_NAME}}-release.apk
           asset_content_type: application/zip
