@@ -17,7 +17,7 @@ android {
         }
     }
     tasks.register("versionName") {
-        println "v" + defaultConfig.versionName + "_" + defaultConfig.versionCode + ""
+        println defaultConfig.versionName
     }
     tasks.register("appname") {
         println "PayzoneTSDemo-${defaultConfig.versionName}_${defaultConfig.versionCode}"
