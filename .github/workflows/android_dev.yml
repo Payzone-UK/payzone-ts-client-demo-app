@@ -45,11 +45,6 @@ jobs:
         with:
           name: ${{env.APP_NAME}}
           path: app/build/outputs/apk/debug/${{env.APP_NAME}}-debug.apk
-  release:
-    name: Release APK
-    needs: build_apk
-    runs-on: ubuntu-latest
-    steps:
       - name: Download APK from build
         uses: actions/download-artifact@v1
         with:
