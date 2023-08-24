@@ -26,42 +26,42 @@ jobs:
           cat github.properties
       - name: Retrieve App name
         run: |
-          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
-          echo ${{steps.app_name.outputs.APP_NAME}}
+          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)" >>
         id: app_name
+      - name: Set App name
+        run: |
+          echo "version_name=${{steps.app_name.outputs.APP_NAME}}" >> $GITHUB_ENV
+      - name: Retrieve Version name
+        run: |
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)" >>
+        id: app_version
+      - name: Set App name
+        run: |
+          echo "version_name=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
       - name: Build with Gradle
         run: ./gradlew build
       - name: Upload APK
         uses: actions/upload-artifact@v1
         with:
-          name: ${{steps.app_name.outputs.APP_NAME}}
-          path: app/build/outputs/apk/debug/${{steps.app_name.outputs.APP_NAME}}-debug.apk
+          name: ${{env.APP_NAME}}
+          path: app/build/outputs/apk/debug/${{env.APP_NAME}}-debug.apk
   release:
     name: Release APK
     needs: build_apk
     runs-on: ubuntu-latest
     steps:
-      - name: Retrieve App name
-        run: |
-          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
-          echo ${{steps.app_name.outputs.APP_NAME}}
-        id: app_name
       - name: Download APK from build
         uses: actions/download-artifact@v1
         with:
-          name: app/build/outputs/apk/debug/${{steps.app_name.outputs.APP_NAME}}-debug.apk
-      - name: Retrieve Tag
-        run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
-        id: app_version
+          name: app/build/outputs/apk/debug/${{env.APP_NAME}}-debug.apk
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{steps.app_version.outputs.VERSION_NAME}}
-          release_name: Release  ${{steps.app_version.outputs.VERSION_NAME}}
+          tag_name: ${{env.VERSION_NAME}}
+          release_name: Release  ${{env.VERSION_NAME}}
 
       - name: Upload Release APK
         id: upload_release_asset
@@ -70,6 +70,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: apk/${{steps.app_name.outputs.APP_NAME}}-debug.apk
-          asset_name: ${{steps.app_name.outputs.APP_NAME}}-debug.apk
+          asset_path: apk/${{env.APP_NAME}}-debug.apk
+          asset_name: ${{env.APP_NAME}}-debug.apk
           asset_content_type: application/zip
