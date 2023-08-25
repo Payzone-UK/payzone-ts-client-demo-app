@@ -52,10 +52,11 @@ jobs:
         id: list_debug_apk
         run: |
           echo "::set-output name=debug_apk::$(app/build/outputs/apk/debug/*.apk)"
+      - run:
+          echo ${{ steps.list_debug_apk.outputs.name }}
       - name: Upload APK files
         id: upload_debug_asset
-        run:
-          echo ${{ steps.list_debug_apk.outputs.name }}
+
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,6 +70,8 @@ jobs:
         id: list_release_apk
         run: |
           echo "::set-output name=debug_apk::$(app/build/outputs/apk/release/*.apk)"
+      - run:
+          echo ${{ steps.list_release_apk.outputs.name }}
       - name: Upload Release APK
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.1
