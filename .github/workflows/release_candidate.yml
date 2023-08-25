@@ -2,7 +2,7 @@ name: Release Candidate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "test/**" ]
 jobs:
   build_and_release:
 
@@ -46,27 +46,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v.${{env.VERSION_NAME}}
-          release_name: Release  ${{env.VERSION_NAME}}
+          tag_name: v.${{env.VERSION_NAME}}11
+          release_name: Release  ${{env.VERSION_NAME}}11
 
-      - name: Upload Debug APK
+      - name: Upload APK files
         id: upload_debug_asset
-        uses: actions/upload-release-asset@v1.0.1
+        uses: alexellis/upload-assets@0.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/debug/${{env.APP_NAME}}-debug.apk
+          asset_paths: '["app/build/outputs/apk/debug/*.apk"]'
           asset_name: ${{env.APP_NAME}}-debug.apk
           asset_content_type: application/zip
-
-      - name: Upload Release APK
-        id: upload_release_asset
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/release/${{env.APP_NAME}}-release.apk
-          asset_name: ${{env.APP_NAME}}-release.apk
-          asset_content_type: application/zip
+#
+#      - name: Upload Release APK
+#        id: upload_release_asset
+#        uses: actions/upload-release-asset@v1.0.1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: app/build/outputs/apk/release/${{env.APP_NAME}}-release.apk
+#          asset_name: ${{env.APP_NAME}}-release.apk
+#          asset_content_type: application/zip
