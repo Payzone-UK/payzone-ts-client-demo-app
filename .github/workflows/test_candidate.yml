@@ -2,7 +2,7 @@ name: Test Candidate
 
 on:
   push:
-    branches: [ "test/**" ]
+    branches: [ "main" ]
 jobs:
   build_apk:
 
