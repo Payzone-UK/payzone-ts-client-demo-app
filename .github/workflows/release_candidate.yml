@@ -2,7 +2,7 @@ name: Release Candidate
 
 on:
   push:
-    branches: [ "test" ]
+    branches: [ "test/**" ]
 jobs:
   build_and_release:
 
