@@ -28,13 +28,10 @@ jobs:
         run: |
           echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
         id: app_name
-      - name: Set App name
-        run: |
-          echo "APP_NAME=${{steps.app_name.outputs.APP_NAME}}-debug.apk" >> $GITHUB_ENV
       - name: Build with Gradle
         run: ./gradlew build
       - name: Upload APK
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: ${{env.APP_NAME}}
-          path: app/build/outputs/apk/debug/${{env.APP_NAME}}
+          name: ${{steps.app_name.outputs.APP_NAME}}
+          path: 'app/build/outputs/apk/debug/*.apk'
