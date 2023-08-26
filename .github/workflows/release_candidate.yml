@@ -52,8 +52,8 @@ jobs:
         run: |
             ARTIFACT_PATHNAME_DEBUG=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
             ARTIFACT_NAME_DEBUG=$(basename $ARTIFACT_PATHNAME_DEBUG)
-            echo ::set-env name=ARTIFACT_NAME_DEBUG::${ARTIFACT_NAME_DEBUG}
-            echo ::set-env name=ARTIFACT_PATHNAME_DEBUG::${ARTIFACT_PATHNAME_DEBUG}
+            echo "ARTIFACT_PATHNAME_DEBUG=${{ARTIFACT_PATHNAME_DEBUG}}" >> $GITHUB_ENV
+            echo "ARTIFACT_NAME_DEBUG=${{ARTIFACT_NAME_DEBUG}}" >> $GITHUB_ENV
       - name: Upload debug APK files
         id: upload_debug_asset
         uses: actions/upload-release-asset@v1.0.1
@@ -68,8 +68,8 @@ jobs:
         run: |
           ARTIFACT_PATHNAME_RELEASE=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
           ARTIFACT_NAME_RELEASE=$(basename $ARTIFACT_PATHNAME_RELEASE)
-          echo ::set-env name=ARTIFACT_NAME_RELEASE::${ARTIFACT_NAME_RELEASE}
-          echo ::set-env name=ARTIFACT_PATHNAME_RELEASE::${ARTIFACT_PATHNAME_RELEASE}
+          echo "ARTIFACT_PATHNAME_RELEASE=${{ARTIFACT_PATHNAME_RELEASE}}" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME_RELEASE=${{ARTIFACT_NAME_RELEASE}}" >> $GITHUB_ENV
       - name: Upload Release APK
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.1
