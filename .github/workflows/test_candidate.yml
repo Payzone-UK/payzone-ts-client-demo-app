@@ -24,12 +24,13 @@ jobs:
           echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
           echo "cat github.properties"
           cat github.properties
+      - name: Build with Gradle
+        run: ./gradlew build
       - name: Set App name
         run: |
           echo "APP_NAME=$(basename  `ls app/build/outputs/apk/debug/*.apk | head -n 1`)" >> $GITHUB_ENV
-        id: app_name
-      - name: Build with Gradle
-        run: ./gradlew build
+        id:
+          app_name
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
