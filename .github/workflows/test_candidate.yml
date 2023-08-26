@@ -2,7 +2,7 @@ name: Test Candidate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "test/**" ]
 jobs:
   build_apk:
 
@@ -24,13 +24,10 @@ jobs:
           echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
           echo "cat github.properties"
           cat github.properties
-      - name: Retrieve App name
-        run: |
-          echo "::set-output name=APP_NAME::$(${{github.workspace}}/gradlew -q appName)"
-        id: app_name
       - name: Set App name
         run: |
-          echo "APP_NAME=${{steps.app_name.outputs.APP_NAME}}-debug.apk" >> $GITHUB_ENV
+          echo "APP_NAME=$(basename  `ls app/build/outputs/apk/debug/*.apk | head -n 1`)" >> $GITHUB_ENV
+        id: app_name
       - name: Build with Gradle
         run: ./gradlew build
       - name: Upload APK
