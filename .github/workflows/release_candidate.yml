@@ -48,30 +48,28 @@ jobs:
         with:
           tag_name: v.${{env.VERSION_NAME}}11
           release_name: Release  ${{env.VERSION_NAME}}1
-      - name: List debug files
-        id: list_debug_apk
+      - name: Get Name of debug Artifact
         run: |
-          echo "::set-output name=debug_apk::$(app/build/outputs/apk/debug/*.apk)"
-      - run:
-          echo ${{ steps.list_debug_apk.outputs.name }}
-      - name: Upload APK files
+            ARTIFACT_PATHNAME_DEBUG=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
+            ARTIFACT_NAME_DEBUG=$(basename $ARTIFACT_PATHNAME_DEBUG)
+            echo ::set-env name=ARTIFACT_NAME_DEBUG::${ARTIFACT_NAME_DEBUG}
+            echo ::set-env name=ARTIFACT_PATHNAME_DEBUG::${ARTIFACT_PATHNAME_DEBUG}
+      - name: Upload debug APK files
         id: upload_debug_asset
-
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.list_debug_apk.outputs.name }}
-          asset_name: ${{env.APP_NAME}}-debug.apk
+          asset_path: ${{env.ARTIFACT_PATHNAME_DEBUG}}
+          asset_name: ${{env.ARTIFACT_NAME_DEBUG}}
           asset_content_type: application/zip
-
-      - name: List release files
-        id: list_release_apk
+      - name: Get Name of Release Artifact
         run: |
-          echo "::set-output name=debug_apk::$(app/build/outputs/apk/release/*.apk)"
-      - run:
-          echo ${{ steps.list_release_apk.outputs.name }}
+          ARTIFACT_PATHNAME_RELEASE=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          ARTIFACT_NAME_RELEASE=$(basename $ARTIFACT_PATHNAME_RELEASE)
+          echo ::set-env name=ARTIFACT_NAME_RELEASE::${ARTIFACT_NAME_RELEASE}
+          echo ::set-env name=ARTIFACT_PATHNAME_RELEASE::${ARTIFACT_PATHNAME_RELEASE}
       - name: Upload Release APK
         id: upload_release_asset
         uses: actions/upload-release-asset@v1.0.1
@@ -79,6 +77,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.list_release_apk.outputs.name }}
-          asset_name: ${{env.APP_NAME}}-release.apk
+          asset_path: ${{env.ARTIFACT_PATHNAME_RELEASE}}
+          asset_name: ${{env.ARTIFACT_NAME_RELEASE}}
           asset_content_type: application/zip
