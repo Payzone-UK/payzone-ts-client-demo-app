@@ -36,7 +36,7 @@ jobs:
       - name: Upload test report directory
         uses: actions/upload-artifact@v2
         with:
-          name: testDebugStuff
+          name: TestResults
           path: app/build/reports/tests/testDebugUnitTest/
       - name: Run lint
         run: ./gradlew lint
