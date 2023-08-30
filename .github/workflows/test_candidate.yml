@@ -29,7 +29,7 @@ jobs:
       - name: Upload test report directory
         uses: actions/upload-artifact@v2
         with:
-          name: testDebugStuff
+          name: TestResults
           path: app/build/reports/tests/testDebugUnitTest/
       - name: Run lint
         run: ./gradlew lint
@@ -42,9 +42,6 @@ jobs:
         id: extract_branch
         run: |
           echo "::set-output name=branch::$(echo ${GITHUB_REF##*/})"
-      - name: test branch name
-        run: |
-          echo ${{steps.extract_branch.outputs.branch}}
       - name: Build with Gradle
         run: ./gradlew -PverName=${{steps.extract_branch.outputs.branch}} clean build
       - name: Set App name
