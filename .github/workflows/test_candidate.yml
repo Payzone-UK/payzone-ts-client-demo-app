@@ -24,6 +24,13 @@ jobs:
           echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
           echo "cat github.properties"
           cat github.properties
+      - name: Run unit tests
+        run: ./gradlew test
+      - name: Upload test report directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: testDebugStuff
+          path: app/build/reports/tests/testDebugUnitTest/
       - name: Get branch name
         id: extract_branch
         run: |

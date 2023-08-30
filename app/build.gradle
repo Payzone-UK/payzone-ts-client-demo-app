@@ -26,7 +26,11 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             def buildType = variant.buildType.name
-            outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}-${buildType}.apk"
+            if (buildType == "release") {
+                outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}-${buildType}-unsigned.apk"
+            } else {
+                outputFileName = "PayzoneTSDemo-${defaultConfig.versionName}-${buildType}.apk"
+            }
         }
     }
 }

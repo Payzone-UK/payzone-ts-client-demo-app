@@ -2,7 +2,7 @@ name: Release Candidate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "test/**" ]
 jobs:
   build_and_release:
 
@@ -31,6 +31,13 @@ jobs:
       - name: Set Version name
         run: |
           echo "VERSION_NAME=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
+      - name: Run unit tests
+        run: ./gradlew test
+      - name: Upload test report directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: testDebugStuff
+          path: app/build/reports/tests/testDebugUnitTest/
       - name: Build with Gradle
         run: ./gradlew build
       - name: Create Release
