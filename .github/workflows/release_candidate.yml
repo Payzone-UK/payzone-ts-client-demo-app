@@ -1,8 +1,8 @@
-name: Release Candidate
+name: Pull request
 
 on:
   push:
-    branches: [ "test/**" ]
+    branches: [ "main", "master" ]
 jobs:
   build_and_release:
 
@@ -38,6 +38,13 @@ jobs:
         with:
           name: testDebugStuff
           path: app/build/reports/tests/testDebugUnitTest/
+      - name: Run lint
+        run: ./gradlew lint
+      - name: Upload lint report
+        uses: actions/upload-artifact@v2
+        with:
+          name: LintResultHtml
+          path: app/build/reports/lint-results*.html
       - name: Build with Gradle
         run: ./gradlew build
       - name: Create Release
