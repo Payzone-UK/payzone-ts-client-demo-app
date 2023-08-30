@@ -24,8 +24,15 @@ jobs:
           echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
           echo "cat github.properties"
           cat github.properties
+      - name: Get branch name
+        id: extract_branch
+        run: |
+          echo "::set-output name=branch::$(echo ${GITHUB_REF##*/})"
+      - name: test branch name
+        run: |
+          echo ${{steps.extract_branch.outputs.branch}}
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew -PverName=${{steps.extract_branch.outputs.branch}} clean build
       - name: Set App name
         run: |
           echo "APP_NAME=$(basename  `ls app/build/outputs/apk/debug/*.apk | head -n 1`)" >> $GITHUB_ENV
