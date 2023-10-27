@@ -25,13 +25,6 @@ jobs:
           echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
           echo "cat github.properties"
           cat github.properties
-      - name: Retrieve Version name
-        run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q versionName)"
-        id: app_version
-      - name: Set Version name
-        run: |
-          echo "VERSION_NAME=${{steps.app_version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
       - name: Run unit tests
         run: ./gradlew test
       - name: Upload test report directory

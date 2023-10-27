@@ -1,206 +1,299 @@
-package com.payzone.binding.client;
+package com.payzone.binding.client
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.StrictMode;
-import android.util.Log;
-import android.widget.Toast;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Bundle
+import android.os.Handler
+import android.os.Message
+import android.os.Messenger
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
+import android.util.Log
+import android.view.View
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import com.payzone.binding.client.response.AddCreditResponse
+import com.payzone.binding.client.response.ReadKeyResponse
+import com.payzone.transaction.client.ApiClient
+import com.payzone.transaction.client.MessageConstants
+import org.json.JSONException
+import org.json.JSONObject
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.payzone.transaction.client.ApiClient;
-import com.payzone.transaction.client.MessageConstants;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-public class MainActivity extends AppCompatActivity {
-    ApiClient apiClient;
-    ResponseHandler responseHandler;
-    Messenger replyMessenger;
-//    private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            Boolean isKeyInserted = intent.getExtras().getBoolean(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED);
-//            sendKeyInserted(isKeyInserted.toString());
-//        }
-//    };
-//
-//    private void sendKeyInserted(String isKeyInserted) {
-//        Toast.makeText(getApplicationContext(), "Key Inserted :::::: "+ isKeyInserted, Toast.LENGTH_LONG).show();
-//        Log.d("sendKeyInserted", "sendKeyInserted: "+ isKeyInserted);
-//    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-//        unregisterReceiver(mHandleMessageReceiver);
+class MainActivity : AppCompatActivity(), ApiResponseListener {
+    var apiClient: ApiClient? = null
+    var responseHandler: ResponseHandler? = null
+    var replyMessenger: Messenger? = null
+    private var buttonAddCredit: Button? = null
+    private var keyImage: String? = null
+    private var productId: Int? = null
+    private var buttonReadKey: Button? = null
+    private val mHandleMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val isKeyInserted =
+                intent.extras!!.getBoolean(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED)
+            sendKeyInserted(isKeyInserted)
+        }
+    }
+    private val mHandleBoxStatusMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val isBoxConnected =
+                intent.extras!!.getBoolean(MessageConstants.RESP_TALEXUS_BOX_STATUS)
+            isBoxConnected(isBoxConnected)
+        }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-        setContentView(R.layout.activity_main);
-//        registerReceiver(mHandleMessageReceiver, new IntentFilter(MessageConstants.ACTION_KEY_INSERTED));
+    private fun isBoxConnected(isBoxConnected: Boolean) {
+        if (isKeyInserted)
+            Toast.makeText(
+                getApplicationContext(),
+                "isBoxConnected :::::: " + isBoxConnected,
+                Toast.LENGTH_LONG
+            ).show();
+        Log.d("isBoxConnected", "isBoxConnected: $isBoxConnected")
     }
 
-    private void initService() {
-        responseHandler = new ResponseHandler();
-        replyMessenger = new Messenger(responseHandler);
-        apiClient = new ApiClient(getApplicationContext(), replyMessenger);
-        apiClient.initService();
-        Log.d("TAG", "initService: ");
+    private fun sendKeyInserted(isKeyInserted: Boolean) {
+        if (isKeyInserted)
+            Toast.makeText(
+                getApplicationContext(),
+                "Key Inserted :::::: " + isKeyInserted,
+                Toast.LENGTH_LONG
+            ).show();
+        Log.d("sendKeyInserted", "sendKeyInserted: $isKeyInserted")
     }
 
-    public void registerDevice() throws JSONException {
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(mHandleMessageReceiver)
+        unregisterReceiver(mHandleBoxStatusMessageReceiver)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val policy = ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+        setContentView(R.layout.activity_main)
+        buttonAddCredit = findViewById(R.id.buttonAddCredit)
+        buttonReadKey = findViewById(R.id.buttonReadKey)
+        registerReceiver(mHandleMessageReceiver, IntentFilter(MessageConstants.ACTION_KEY_INSERTED))
+        registerReceiver(
+            mHandleBoxStatusMessageReceiver,
+            IntentFilter(MessageConstants.ACTION_TALEXUS_BOX_STATUS)
+        )
+        initService()
+        buttonAddCredit?.setOnClickListener(View.OnClickListener {
+            try {
+                addCredit()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        })
+        buttonReadKey?.setOnClickListener(View.OnClickListener {
+            try {
+                readKey()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        })
+    }
+
+    private fun initService() {
+        responseHandler = ResponseHandler()
+        replyMessenger = Messenger(responseHandler)
+        responseHandler!!.setListener(this)
+        apiClient = ApiClient(applicationContext, replyMessenger)
+        apiClient!!.initService()
+        Log.d("TAG", "initService: ")
+    }
+
+    @Throws(JSONException::class)
+    fun registerDevice() {
+        val obj = JSONObject()
+        obj.put("barcode", "267693243349691")
+        obj.put("deviceId", "1545D2053")
+        obj.put("tId", "49691")
+        val success = apiClient!!.registerDevice(obj)
+        println("## Device Registration sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun startSession() {
+        val obj = JSONObject()
+        obj.put("pin", "2580")
+        val success = apiClient!!.startSession(obj)
+        println("## Start session sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun initTransaction() {
+        val obj = JSONObject()
+        obj.put("clientRef", "29fa53da-fea0-47b3-b7b0-ff564ed76324")
+        obj.put("transactionSource", 0)
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3")
+        //        obj.put("productId", "3789");
+        obj.put("transactionAmount", 1000)
+        obj.put("barcode", "63385450042016567880")
+        val success = apiClient!!.initTransaction(obj)
+        println("## Transaction init sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun completeTransaction() {
+        val obj = JSONObject()
+        val extraJsonInfo = JSONObject()
+        extraJsonInfo.put("basketId", "0423502170")
+        extraJsonInfo.put("dateReceived", "2021-08-03")
+        obj.put("extra_json_info", extraJsonInfo)
+        obj.put("ticketNumber", "PP001002")
+        obj.put("id", "deb1f651-66ce-11eb-863b-a5942ff6aeb3")
+        obj.put("responseCode", "00")
+        val success = apiClient!!.completeTransaction(obj)
+        println("## Transaction complete sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun completeTransactionFailed() {
+        val obj = JSONObject()
+        obj.put("smartMeterErrorText", "Failed reason")
+        obj.put("id", "deb1f651-66ce-11eb-863b-a5942ff6aeb3")
+        obj.put("responseCode", "05")
+        val success = apiClient!!.completeTransaction(obj)
+        println("## Transaction complete failed sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun markTransactionSuccess() {
+        val obj = JSONObject()
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3")
+        val success = apiClient!!.markTransactionSuccess(obj)
+        println("## Mark transaction success sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun markTransactionFailed() {
+        val obj = JSONObject()
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3")
+        val success = apiClient!!.markTransactionFailed(obj)
+        println("## Mark transaction failed sent to service queue: $success")
+    }
+
+    @Throws(JSONException::class)
+    fun markReceiptPrinted() {
+        val obj = JSONObject()
+        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3")
+        val success = apiClient!!.markReceiptPrinted(obj)
+        println("## Mark receipt printed sent to service queue: $success")
+    }
+
+    fun storeCashierId() {
+        val success = apiClient!!.storeCashierId("101")
+        println("## Store Cashier ID sent to service queue: $success")
+    }
+
+    val isTransactionReady: Unit
+        get() {
+//        if(apiClient.mBound) {
+            val success = apiClient!!.isTransactionReady
+            println("## Is Transaction Ready sent to service queue: $success")
+            //        }
+        }
+    val apiToken: Unit
+        get() {
+            val success = apiClient!!.getToken("35112029")
+            println("## getApiToken: $success")
+        }
+    val isKeyInserted: Unit
+        get() {
+//        if(apiClient.mBound) {
+            val success = apiClient!!.isKeyInserted()
+            println("## isKeyInserted: $success")
+            //        }
+        }
+    val isBoxConnected: Unit
+        get() {
+//        if(apiClient.mBound) {
+            val success = apiClient!!.isBoxConnected()
+            println("## isBoxConnected: $success")
+            //        }
+        }
+
+    //
+    @Throws(JSONException::class)
+    fun readKey() {
+        val success = apiClient!!.readKey()
+        println("## readKey: $success")
+    }
+
+    override fun readKeyResponse(response: ReadKeyResponse?) {
+        productId = response?.variants?.find { it.uiFlow == "talexus.addCredit" }?.id
+        keyImage = response.keyImage
+        println("## productId: $productId")
+        println("## keyImage: ${response?.keyImage}")
+    }
+
+    override fun addCreditResponse(response: AddCreditResponse?) {
+        if (response?.keyImage != null) keyImage = response?.keyImage
+    }
+
+    @Throws(JSONException::class)
+    fun addCredit() {
+        val obj = JSONObject()
+        obj.put("amount", "300")
+        obj.put("productId", productId)
+        obj.put("keyImage", keyImage)
+        val success = apiClient!!.addCredit(obj)
+        println("## Talexus add credit: $success")
+    }
+
+
+    public void rti() throws JSONException
+    {
         JSONObject obj = new JSONObject();
-        obj.put("barcode", "267693243349691");
-        obj.put("deviceId", "1545D2053");
-        obj.put("tId", "49691");
-        boolean success = apiClient.registerDevice(obj);
-        System.out.println("## Device Registration sent to service queue: " + success);
+        obj.put("rtiReference", "00757141");
+        obj.put("productId", "11");
+        obj.put(
+            "keyImage",
+            "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC"
+        );
+        boolean success = apiClient . rti (obj);
+        System.out.println("## ReadKey 2: " + success);
     }
 
-    public void startSession() throws JSONException {
+    public void reversal() throws JSONException
+    {
         JSONObject obj = new JSONObject();
-        obj.put("pin", "2580");
-        boolean success = apiClient.startSession(obj);
-        System.out.println("## Start session sent to service queue: " + success);
+        obj.put("productId", "11");
+        obj.put(
+            "keyImage",
+            "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC"
+        );
+        boolean success = apiClient . reversal (obj);
+        System.out.println("## Reversal: " + success);
     }
 
-    public void initTransaction() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("clientRef", "29fa53da-fea0-47b3-b7b0-ff564ed76324");
-//        obj.put("transactionSource", 0);
-        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
-//        obj.put("productId", "3789");
-        obj.put("transactionAmount", 1000);
-        obj.put("barcode", "63385450042016567880");
-        boolean success = apiClient.initTransaction(obj);
-        System.out.println("## Transaction init sent to service queue: " + success);
+    @Throws(JSONException::class)
+    fun securityKeys() {
+        val obj = JSONObject()
+        obj.put("serialNumber", "4gwlhfMKWzE=")
+        val success = apiClient!!.securityKeys(obj)
+        println("## securityKeys: $success")
     }
 
-    public void completeTransaction() throws JSONException {
-        JSONObject obj = new JSONObject();
-
-        JSONObject extraJsonInfo = new JSONObject();
-        extraJsonInfo.put("basketId", "0423502170");
-        extraJsonInfo.put("dateReceived", "2021-08-03");
-        obj.put("extra_json_info", extraJsonInfo);
-
-        obj.put("ticketNumber", "PP001002");
-        obj.put("id", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
-        obj.put("responseCode", "00");
-
-        boolean success = apiClient.completeTransaction(obj);
-        System.out.println("## Transaction complete sent to service queue: " + success);
-    }
-
-    public void completeTransactionFailed() throws JSONException {
-        JSONObject obj = new JSONObject();
-
-        obj.put("smartMeterErrorText", "Failed reason");
-        obj.put("id", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
-        obj.put("responseCode", "05");
-
-        boolean success = apiClient.completeTransaction(obj);
-        System.out.println("## Transaction complete failed sent to service queue: " + success);
-    }
-
-    public void markTransactionSuccess() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
-        boolean success = apiClient.markTransactionSuccess(obj);
-        System.out.println("## Mark transaction success sent to service queue: " + success);
-    }
-
-    public void markTransactionFailed() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
-        boolean success = apiClient.markTransactionFailed(obj);
-        System.out.println("## Mark transaction failed sent to service queue: " + success);
-    }
-
-    public void markReceiptPrinted() throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("transactionGuid", "deb1f651-66ce-11eb-863b-a5942ff6aeb3");
-        boolean success = apiClient.markReceiptPrinted(obj);
-        System.out.println("## Mark receipt printed sent to service queue: " + success);
-    }
-
-    public void storeCashierId() {
-        boolean success = apiClient.storeCashierId("101");
-        System.out.println("## Store Cashier ID sent to service queue: " + success);
-    }
-
-    public void isTransactionReady() {
-        boolean success = apiClient.isTransactionReady();
-        System.out.println("## Is Transaction Ready sent to service queue: " + success);
-    }
-
-    public void getApiToken() {
-        boolean success = apiClient.getToken("35112029");
-        System.out.println("## getApiToken: " + success);
-    }
-
-//    public void isKeyInserted() {
-//        boolean success = apiClient.isKeyInserted();
-//        System.out.println("## getApiToken: " + success);
-//    }
-//
-//    public void readKey() throws JSONException {
-//        boolean success = apiClient.readKey();
-//        System.out.println("## readKey: " + success);
-//    }
-//
-//    public void addCredit() throws JSONException {
-//        JSONObject obj = new JSONObject();
-//        obj.put("amount", "300");
-//        obj.put("productId", "12");
-//        obj.put("keyImage", "55552297002156132911DC34380A1F1CFE1E69AAAA0012673A40FCA500006C00990B040004008400040004000400040004000400040044008400040004000400220101001E0B00000000000000002738000000002738000023072005CB5D0000000000000000453ACB5D000000184C180006000023080706200F21FC7F433EA7");
-//        boolean success = apiClient.addCredit(obj);
-//        System.out.println("## Talexus add credit: " + success);
-//    }
-//
-//    public void rti() throws JSONException {
-//        JSONObject obj = new JSONObject();
-//        obj.put("rtiReference", "00757141");
-//        obj.put("productId", "11");
-//        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
-//        boolean success = apiClient.rti(obj);
-//        System.out.println("## ReadKey 2: " + success);
-//    }
-//
-//    public void reversal() throws JSONException {
-//        JSONObject obj = new JSONObject();
-//        obj.put("productId", "11");
-//        obj.put("keyImage", "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC");
-//        boolean success = apiClient.reversal(obj);
-//        System.out.println("## Reversal: " + success);
-//    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initService();
-
-
+    override fun onStart() {
+        super.onStart()
         try {
 
-          registerDevice();
+//          registerDevice();
 //          startSession();
 
 //          storeCashierId();
-          getApiToken();
-//          isTransactionReady();
+//          getApiToken();
+//          securityKeys();
+//            isTransactionReady
+//            isKeyInserted
+//            isBoxConnected
 
 //          initTransaction();
 //         completeTransaction();
@@ -213,84 +306,115 @@ public class MainActivity extends AppCompatActivity {
 //            addCredit();
 //            reversal();
 //            rti();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
+    override fun onStop() {
+        super.onStop()
     }
 
-    public class ResponseHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            String response;
-            switch (msg.what) {
-                case MessageConstants.MSG_REGISTER_DEVICE:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_REGISTER_DEVICE));
-                    System.out.println("## Register Device Response = " + response);
-                    break;
-                case MessageConstants.MSG_INIT_TRANSACTION:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_INIT_TRANSACTION));
-                    System.out.println("## Transaction Initialised Response = " + response);
-                    break;
-                case MessageConstants.MSG_COMPLETE_TRANS:
-                    try {
-                        response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_COMPLETE_TRANS));
-                        System.out.println("## Complete Transaction Response = " + response);
+    inner class ResponseHandler : Handler() {
+        var responseListener: ApiResponseListener? = null
+        fun setListener(responseListener: ApiResponseListener?) {
+            this.responseListener = responseListener
+        }
 
-                        JSONObject obj = new JSONObject(response);
-                        System.out.println("## CUSTOMER RECEIPT LENGTH: " + obj.getString("customerReceipt").length());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case MessageConstants.MSG_MARK_TRANS_SUCCESS:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_MARK_TRANS_SUCCESS));
-                    System.out.println("## Marked Successful Response = " + response);
-                    break;
-                case MessageConstants.MSG_MARK_TRANS_FAILED:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_MARK_TRANS_FAILED));
-                    System.out.println("## Marked Failed Response = " + response);
-                    break;
-                case MessageConstants.MSG_MARK_RECEIPT_PRINTED:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_MARK_RECEIPT_PRINTED));
-                    System.out.println("## Marked Receipt Printed Response = " + response);
-                    break;
-                case MessageConstants.MSG_STORE_CID:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_STORE_CID));
-                    System.out.println("## Store Cashier ID Response = " + response);
-                    break;
-                case MessageConstants.MSG_IS_TRANSACTION_READY:
-                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_IS_TRANSACTION_READY));
-                    System.out.println("## Is Transaction Ready Response = " + response);
-                    break;
-//                case MessageConstants.MSG_TALEXUS_IS_KEY_INSERTED:
-//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED));
-//                    System.out.println("## Is Talexus key inserted Response = " + response);
-//                    break;
-//                case MessageConstants.MSG_TALEXUS_READ_KEY:
-//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_READ_KEY));
-//                    System.out.println("## Talexus Read key Response = " + response);
-//                    break;
-//                case MessageConstants.MSG_TALEXUS_ADD_CREDIT:
-//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_ADD_CREDIT));
-//                    System.out.println("## Talexus Add credit Response = " + response);
-//                    break;
-//                case MessageConstants.MSG_TALEXUS_RTI:
-//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_RTI));
-//                    System.out.println("## Talexus RTI Response = " + response);
-//                    break;
-//                case MessageConstants.MSG_TALEXUS_REVERSE_CREDIT:
-//                    response = ApiClient.decompressData(msg.getData().getString(MessageConstants.RESP_TALEXUS_REVERSE_CREDIT));
-//                    System.out.println("## Talexus Reverse Response = " + response);
-//                    break;
-                default:
-                    super.handleMessage(msg);
+        override fun handleMessage(msg: Message) {
+            val response: String
+            when (msg.what) {
+                MessageConstants.MSG_REGISTER_DEVICE -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_REGISTER_DEVICE))
+                    println("## Register Device Response Binding = $response")
+                }
+
+                MessageConstants.MSG_INIT_TRANSACTION -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_INIT_TRANSACTION))
+                    println("## Transaction Initialised Response = $response")
+                }
+
+                MessageConstants.MSG_COMPLETE_TRANS -> try {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_COMPLETE_TRANS))
+                    println("## Complete Transaction Response = $response")
+                    val obj = JSONObject(response)
+                    println("## CUSTOMER RECEIPT LENGTH: " + obj.getString("customerReceipt").length)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                MessageConstants.MSG_MARK_TRANS_SUCCESS -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_MARK_TRANS_SUCCESS))
+                    println("## Marked Successful Response = $response")
+                }
+
+                MessageConstants.MSG_MARK_TRANS_FAILED -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_MARK_TRANS_FAILED))
+                    println("## Marked Failed Response = $response")
+                }
+
+                MessageConstants.MSG_MARK_RECEIPT_PRINTED -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_MARK_RECEIPT_PRINTED))
+                    println("## Marked Receipt Printed Response = $response")
+                }
+
+                MessageConstants.MSG_STORE_CID -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_STORE_CID))
+                    println("## Store Cashier ID Response = $response")
+                }
+
+                MessageConstants.MSG_IS_TRANSACTION_READY -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_IS_TRANSACTION_READY))
+                    println("## Is Transaction Ready Response = $response")
+                }
+
+                MessageConstants.MSG_TALEXUS_IS_KEY_INSERTED -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED))
+                    println("## Is Talexus key inserted Response = $response")
+                }
+
+                MessageConstants.MSG_TALEXUS_READ_KEY -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_TALEXUS_READ_KEY))
+                    println("## Talexus Read key Response = $response")
+                    responseListener?.readKeyResponse(
+                        TransactionServiceHelper.handleResponse(
+                            msg = msg,
+                            key = MessageConstants.RESP_TALEXUS_READ_KEY,
+                            typeClass = ReadKeyResponse::class
+                        )
+                    )
+                }
+
+                MessageConstants.MSG_TALEXUS_ADD_CREDIT -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_TALEXUS_ADD_CREDIT))
+                    println("## Talexus Add credit Response = $response")
+                    responseListener?.addCreditResponse(
+                        TransactionServiceHelper.handleResponse(
+                            msg = msg,
+                            key = MessageConstants.RESP_TALEXUS_ADD_CREDIT,
+                            typeClass = AddCreditResponse::class
+                        )
+                    )
+                }
+
+                MessageConstants.MSG_QUANTUM_SECURITY_KEYS -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_QUANTUM_SECURITY_KEYS))
+                    println("## Q Response = $response")
+                }
+
+                else -> super.handleMessage(msg)
             }
         }
     }
