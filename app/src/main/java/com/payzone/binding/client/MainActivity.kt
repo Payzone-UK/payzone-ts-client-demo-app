@@ -13,6 +13,7 @@ import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.payzone.binding.client.response.AddCreditResponse
 import com.payzone.binding.client.response.ReadKeyResponse
@@ -22,9 +23,9 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity(), ApiResponseListener {
-    var apiClient: ApiClient? = null
-    var responseHandler: ResponseHandler? = null
-    var replyMessenger: Messenger? = null
+    private var apiClient: ApiClient? = null
+    private var responseHandler: ResponseHandler? = null
+    private var replyMessenger: Messenger? = null
     private var buttonAddCredit: Button? = null
     private var keyImage: String? = null
     private var productId: Int? = null
@@ -45,23 +46,23 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
     }
 
     private fun isBoxConnected(isBoxConnected: Boolean) {
-        if (isKeyInserted)
-            Toast.makeText(
-                getApplicationContext(),
-                "isBoxConnected :::::: " + isBoxConnected,
-                Toast.LENGTH_LONG
-            ).show();
+//        if (isBoxConnected)
+//            Toast.makeText(
+//                getApplicationContext(),
+//                "isBoxConnected :::::: " + isBoxConnected,
+//                Toast.LENGTH_LONG
+//            ).show();
         Log.d("isBoxConnected", "isBoxConnected: $isBoxConnected")
     }
 
     private fun sendKeyInserted(isKeyInserted: Boolean) {
-        if (isKeyInserted)
-            Toast.makeText(
-                getApplicationContext(),
-                "Key Inserted :::::: " + isKeyInserted,
-                Toast.LENGTH_LONG
-            ).show();
-        Log.d("sendKeyInserted", "sendKeyInserted: $isKeyInserted")
+//        if (isKeyInserted)
+//            Toast.makeText(
+//                getApplicationContext(),
+//                "Key Inserted :::::: " + isKeyInserted,
+//                Toast.LENGTH_LONG
+//            ).show();
+        Log.d("isKeyInserted", "isKeyInserted: $isKeyInserted")
     }
 
     override fun onDestroy() {
@@ -83,14 +84,14 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
             IntentFilter(MessageConstants.ACTION_TALEXUS_BOX_STATUS)
         )
         initService()
-        buttonAddCredit?.setOnClickListener(View.OnClickListener {
+        buttonAddCredit?.setOnClickListener({
             try {
                 addCredit()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         })
-        buttonReadKey?.setOnClickListener(View.OnClickListener {
+        buttonReadKey?.setOnClickListener({
             try {
                 readKey()
             } catch (e: Exception) {
@@ -194,10 +195,10 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
 
     val isTransactionReady: Unit
         get() {
-//        if(apiClient.mBound) {
-            val success = apiClient!!.isTransactionReady
-            println("## Is Transaction Ready sent to service queue: $success")
-            //        }
+            if (apiClient!!.mBound) {
+                val success = apiClient!!.isTransactionReady
+                println("## Is Transaction Ready sent to service queue: $success")
+            }
         }
     val apiToken: Unit
         get() {
@@ -206,17 +207,17 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         }
     val isKeyInserted: Unit
         get() {
-//        if(apiClient.mBound) {
-            val success = apiClient!!.isKeyInserted()
-            println("## isKeyInserted: $success")
-            //        }
+            if (apiClient!!.mBound) {
+                val success = apiClient!!.isKeyInserted()
+                println("## isKeyInserted: $success")
+            }
         }
     val isBoxConnected: Unit
         get() {
-//        if(apiClient.mBound) {
-            val success = apiClient!!.isBoxConnected()
-            println("## isBoxConnected: $success")
-            //        }
+            if (apiClient!!.mBound) {
+                val success = apiClient!!.isBoxConnected()
+                println("## isBoxConnected: $success")
+            }
         }
 
     //
@@ -227,14 +228,29 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
     }
 
     override fun readKeyResponse(response: ReadKeyResponse?) {
-        productId = response?.variants?.find { it.uiFlow == "talexus.addCredit" }?.id
-        keyImage = response.keyImage
-        println("## productId: $productId")
-        println("## keyImage: ${response?.keyImage}")
+        response?.success?.let {
+            if (it) {
+                productId = response.variants?.find { it.uiFlow == "talexus.addCredit" }?.id
+                val balance =
+                    response.variants?.find { it.uiFlow == "talexus.displayBalance" }?.balance
+                keyImage = response.keyImage
+                println("## productId: $productId")
+                println("## keyImage: ${response.keyImage}")
+                Toast.makeText(this, "Key read. Balance $balance", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, response.message, Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     override fun addCreditResponse(response: AddCreditResponse?) {
-        if (response?.keyImage != null) keyImage = response?.keyImage
+        response?.success?.let {
+            if (it) {
+                if (response.keyImage != null) keyImage = response.keyImage
+            } else {
+                Toast.makeText(this, response.message, Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     @Throws(JSONException::class)
@@ -247,30 +263,23 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         println("## Talexus add credit: $success")
     }
 
-
-    public void rti() throws JSONException
-    {
-        JSONObject obj = new JSONObject();
-        obj.put("rtiReference", "00757141");
-        obj.put("productId", "11");
-        obj.put(
-            "keyImage",
-            "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC"
-        );
-        boolean success = apiClient . rti (obj);
-        System.out.println("## ReadKey 2: " + success);
+    @Throws(JSONException::class)
+    fun rti() {
+        val obj = JSONObject()
+        obj.put("rtiReference", "00757141")
+        obj.put("productId", 11)
+        obj.put("keyImage", keyImage)
+        val success = apiClient!!.rti(obj)
+        println("## Talexus RTI: $success")
     }
 
-    public void reversal() throws JSONException
-    {
-        JSONObject obj = new JSONObject();
-        obj.put("productId", "11");
-        obj.put(
-            "keyImage",
-            "33346574081DDBD0004926E120600AF000A47340000D3AC41E5FFAB4070C140990B440EC800840E040E04000180000000000005FE30000000000000000000000000000000000000000000056BC"
-        );
-        boolean success = apiClient . reversal (obj);
-        System.out.println("## Reversal: " + success);
+    @Throws(JSONException::class)
+    fun reversal() {
+        val obj = JSONObject()
+        obj.put("productId", productId)
+        obj.put("keyImage", keyImage)
+        val success = apiClient!!.reversal(obj)
+        println("## Talexus Reversal: $success")
     }
 
     @Throws(JSONException::class)
