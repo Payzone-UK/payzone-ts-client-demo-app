@@ -65,6 +65,11 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         Log.d("isKeyInserted", "isKeyInserted: $isKeyInserted")
     }
 
+    override fun onResume() {
+        super.onResume()
+        apiClient!!.isBoxConnected()
+        apiClient!!.isKeyInserted()
+    }
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(mHandleMessageReceiver)
@@ -84,20 +89,20 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
             IntentFilter(MessageConstants.ACTION_TALEXUS_BOX_STATUS)
         )
         initService()
-        buttonAddCredit?.setOnClickListener({
+        buttonAddCredit?.setOnClickListener {
             try {
                 addCredit()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        })
-        buttonReadKey?.setOnClickListener({
+        }
+        buttonReadKey?.setOnClickListener {
             try {
                 readKey()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        })
+        }
     }
 
     private fun initService() {
@@ -106,7 +111,10 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         responseHandler!!.setListener(this)
         apiClient = ApiClient(applicationContext, replyMessenger)
         apiClient!!.initService()
+        apiClient!!.initTalexus()
         Log.d("TAG", "initService: ")
+        apiClient!!.isBoxConnected()
+        apiClient!!.isKeyInserted()
     }
 
     @Throws(JSONException::class)
@@ -202,7 +210,7 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         }
     val apiToken: Unit
         get() {
-            val success = apiClient!!.getToken("35112029")
+            val success = apiClient!!.getToken("24850489")
             println("## getApiToken: $success")
         }
     val isKeyInserted: Unit
@@ -259,6 +267,14 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         obj.put("amount", "300")
         obj.put("productId", productId)
         obj.put("keyImage", keyImage)
+        obj.put("stockUnitIdentifier", "M38")
+        obj.put("smartId", "6TAN")
+        obj.put("basketId", "1214112-33-53")
+        obj.put("fadCode", "1001108")
+        obj.put("deviceType", "mobile")
+        obj.put("deviceId", "1550D2100")
+        obj.put("nodeId", "38")
+        obj.put("itemId", "38")
         val success = apiClient!!.addCredit(obj)
         println("## Talexus add credit: $success")
     }
@@ -269,6 +285,14 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         obj.put("rtiReference", "00757141")
         obj.put("productId", 11)
         obj.put("keyImage", keyImage)
+        obj.put("stockUnitIdentifier", "M38")
+        obj.put("smartId", "6TAN")
+        obj.put("basketId", "1214112-33-53")
+        obj.put("fadCode", "1001108")
+        obj.put("deviceType", "mobile")
+        obj.put("deviceId", "1550D2100")
+        obj.put("nodeId", "38")
+        obj.put("itemId", "38")
         val success = apiClient!!.rti(obj)
         println("## Talexus RTI: $success")
     }
@@ -294,6 +318,7 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
         super.onStart()
         try {
 
+            val x = apiToken
 //          registerDevice();
 //          startSession();
 
@@ -389,6 +414,12 @@ class MainActivity : AppCompatActivity(), ApiResponseListener {
                     response =
                         ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_TALEXUS_IS_KEY_INSERTED))
                     println("## Is Talexus key inserted Response = $response")
+                }
+
+                MessageConstants.MSG_TALEXUS_BOX_CONNECTED -> {
+                    response =
+                        ApiClient.decompressData(msg.data.getString(MessageConstants.RESP_TALEXUS_BOX_STATUS))
+                    println("## Is Talexus Box = $response")
                 }
 
                 MessageConstants.MSG_TALEXUS_READ_KEY -> {
