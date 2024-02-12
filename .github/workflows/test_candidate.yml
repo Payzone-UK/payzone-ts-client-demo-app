@@ -19,8 +19,8 @@ jobs:
       - name: Create github.properties file
         run: |
           touch github.properties
-          echo gpr.usr=${{ secrets.GITHUB_USER }} >> github.properties
-          echo gpr.key=${{ secrets.GITHUB_TOKEN }} >> github.properties
+          echo gpr.usr=${{ secrets.GPR_USER }} >> github.properties
+          echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
           echo "cat github.properties"
           cat github.properties
 
@@ -76,8 +76,8 @@ jobs:
         - name: Create github.properties file
           run: |
             touch github.properties
-            echo gpr.usr=${{ secrets.GITHUB_USER }} >> github.properties
-            echo gpr.key=${{ secrets.GITHUB_TOKEN }} >> github.properties
+            echo gpr.usr=${{ secrets.GPR_USER }} >> github.properties
+            echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
             echo "cat github.properties"
             cat github.properties
 
