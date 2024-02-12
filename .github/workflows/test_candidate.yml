@@ -50,7 +50,7 @@ jobs:
         id:
           app_name
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.APP_NAME}}
           path: app/build/outputs/apk/debug/*.apk
