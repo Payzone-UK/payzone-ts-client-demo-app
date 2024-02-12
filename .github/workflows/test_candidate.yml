@@ -61,7 +61,7 @@ jobs:
         with:
           name: ${{env.APP_NAME}}
           path: app/build/outputs/apk/debug/*.apk
-    build_and_release:
+  build_and_release:
 
       runs-on: ubuntu-latest
 
