@@ -92,18 +92,42 @@ jobs:
 
         - name: Build with Gradle
           run: ./gradlew clean build
-        - name: Create or Update Release
-          id: create_or_update_release
+        - name: Check if Release Exists
+          id: check_release
           run: |
-            gh release edit "v.${{ env.VERSION_NAME }}.2" --title "Release test ${{ env.VERSION_NAME }}"
+            if gh release view "v.${{ env.VERSION_NAME }}" &> /dev/null; then
+              echo "::set-output name=release_exists::true"
+            else
+              echo "::set-output name=release_exists::false"
+            fi
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Create or Update Release
+          id: create_or_update_release
+          if: steps.check_release.outputs.release_exists == 'false'
+          run: |
+            echo "New release"
+            gh release create "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Update Release
+          id: update_release
+          if: steps.check_release.outputs.release_exists == 'true'
+          run: |
+            echo "Update release"
+            release_id=$(gh release view "v.${{ env.VERSION_NAME }}" --json id --jq '.id')
+            gh release edit $release_id --title "Release ${{ env.VERSION_NAME }}"
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
         - name: Upload Artifacts
           id: upload_artifacts
           run: |
-            release_tag="v.${{ env.VERSION_NAME }}"
+            release_tag="v.${{ env.VERSION_NAME }}.2"
             debug_apk=$(find app/build/outputs/apk/debug -name "*.apk")
             release_apk=$(find app/build/outputs/apk/release -name "*.apk")
-            gh release upload $release_tag $debug_apk $release_apk
+            gh release upload $release_tag $debug_apk $release_apk --clobber
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
