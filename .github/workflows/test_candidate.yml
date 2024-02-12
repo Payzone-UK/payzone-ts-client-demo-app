@@ -95,11 +95,7 @@ jobs:
         - name: Create or Update Release
           id: create_or_update_release
           run: |
-            if gh release view "v.${{ env.VERSION_NAME }}" &> /dev/null; then
-              gh release create "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
-            else
-              gh release edit "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
-            fi
+            gh release edit "v.${{ env.VERSION_NAME }}" --title "Release test ${{ env.VERSION_NAME }}"
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         - name: Upload Artifacts
