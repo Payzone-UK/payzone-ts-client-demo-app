@@ -117,8 +117,7 @@ jobs:
           if: steps.check_release.outputs.release_exists == 'true'
           run: |
             echo "Update release"
-            release_id=$(gh release view "v.${{ env.VERSION_NAME }}" --json id --jq '.id')
-            gh release edit $release_id --title "Release ${{ env.VERSION_NAME }}"
+            gh release edit "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
