@@ -47,24 +47,3 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation 'com.payzone.transaction.client:payzone-ts-client-android:0.2.1'
 }
-
-def githubProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
-
-repositories {
-    google()
-    mavenCentral()
-    maven {
-        name = "GitHubPackages"
-        /*  Configure path to the library hosted on GitHub Package Registry
-         *  Replace UserID with package owner userID and REPOSITORY with the repository name
-         *  e.g. "https://maven.pkg.github.com/enefce/AndroidLibraryForGitHubPackagesDemo"
-         */
-        url = uri("https://maven.pkg.github.com/Payzone-UK/payzone-ts-client-android")
-
-        credentials {
-            username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
-            password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
-        }
-    }
-}
