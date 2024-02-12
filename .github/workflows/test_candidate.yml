@@ -4,40 +4,47 @@ on:
   push:
     branches: [ "test/**" ]
 jobs:
-  build_apk:
+  build_test:
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
-      - name: set up JDK 11
+      - name: set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
-
       - name: Create github.properties file
         run: |
           touch github.properties
-          echo gpr.usr=${{ secrets.GPR_USER }} >> github.properties
-          echo gpr.key=${{ secrets.GPR_API_KEY }} >> github.properties
+          echo gpr.usr=${{ secrets.GITHUB_USER }} >> github.properties
+          echo gpr.key=${{ secrets.GITHUB_TOKEN }} >> github.properties
           echo "cat github.properties"
           cat github.properties
-      - name: Run unit tests
-        run: ./gradlew test
-      - name: Upload test report directory
-        uses: actions/upload-artifact@v2
-        with:
-          name: TestResults
-          path: app/build/reports/tests/testDebugUnitTest/
-      - name: Run lint
-        run: ./gradlew lint
-      - name: Upload lint report
-        uses: actions/upload-artifact@v2
-        with:
-          name: LintResultHtml
-          path: app/build/reports/lint-results*.html
+
+      - name: Create debug keystore
+        run: |
+          mkdir -p $HOME/.android
+          echo "$ANDROID_SDK_ROOT" > $HOME/.android/repositories.cfg
+          echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 --decode > $HOME/.android/debug.keystore
+      
+
+      #      - name: Run unit tests
+      #        run: ./gradlew test
+      #      - name: Upload test report directory
+      #        uses: actions/upload-artifact@v3
+      #        with:
+      #          name: TestResults
+      #          path: build/reports/tests/testDebugUnitTest/
+      #      - name: Run lint
+      #        run: ./gradlew lint
+      #      - name: Upload lint report
+      #        uses: actions/upload-artifact@v3
+      #        with:
+      #          name: LintResult
+      #          path: build/reports/lint-results*.html
       - name: Get branch name
         id: extract_branch
         run: |
@@ -54,3 +61,64 @@ jobs:
         with:
           name: ${{env.APP_NAME}}
           path: app/build/outputs/apk/debug/*.apk
+    build_and_release:
+
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v3
+        - name: set up JDK 17
+          uses: actions/setup-java@v3
+          with:
+            java-version: '17'
+            distribution: 'temurin'
+            cache: gradle
+        - name: Create github.properties file
+          run: |
+            touch github.properties
+            echo gpr.usr=${{ secrets.GITHUB_USER }} >> github.properties
+            echo gpr.key=${{ secrets.GITHUB_TOKEN }} >> github.properties
+            echo "cat github.properties"
+            cat github.properties
+
+        - name: Create debug keystore
+          run: |
+            mkdir -p $HOME/.android
+            echo "$ANDROID_SDK_ROOT" > $HOME/.android/repositories.cfg
+            echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 --decode > $HOME/.android/debug.keystore
+
+        #      - name: Run unit tests
+        #        run: ./gradlew test
+        #      - name: Upload test report directory
+        #        uses: actions/upload-artifact@v3
+        #        with:
+        #          name: TestResults
+        #          path: build/reports/tests/testDebugUnitTest/
+        #      - name: Run lint
+        #        run: ./gradlew lint
+        #      - name: Upload lint report
+        #        uses: actions/upload-artifact@v3
+        #        with:
+        #          name: LintResult
+        #          path: build/reports/lint-results*.html
+
+        - name: Set Version Name
+          run: echo "VERSION_NAME=$(./gradlew -q versionName)" >> $GITHUB_ENV
+
+        - name: Build with Gradle
+          run: ./gradlew clean build
+        - name: Create or Update Release
+          id: create_or_update_release
+          run: |
+            gh release create "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: Upload Artifacts
+          id: upload_artifacts
+          run: |
+            release_tag="v.${{ env.VERSION_NAME }}"
+            debug_apk=$(find app/build/outputs/apk/debug -name "*.apk")
+            release_apk=$(find app/build/outputs/apk/release -name "*.apk")
+            gh release upload $release_tag $debug_apk $release_apk
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
