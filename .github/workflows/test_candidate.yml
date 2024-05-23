@@ -110,7 +110,7 @@ jobs:
           run : echo "${{ env.RELEASE_EXISTS }}"
         - name: Create or Update Release
           id: create_or_update_release
-          if: ${{ env.RELEASE_EXISTS }}
+          if: env.RELEASE_EXISTS == true
           run: |
             echo "New release"
 #            gh release create "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
@@ -119,24 +119,24 @@ jobs:
 
         - name: Update Release
           id: update_release
-          if: ${{ env.RELEASE_EXISTS }}
+          if: env.RELEASE_EXISTS == false
           run: |
             echo "Update release"
 #            gh release edit "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-        - name: Upload Artifacts
-          id: upload_artifacts
-          run: |
-            set -e  # Exit immediately if any command returns a non-zero status
-            release_tag="v.${{ env.VERSION_NAME }}"
-            debug_apk=$(find app/build/outputs/apk/debug -name "*.apk")
-            release_apk=$(find app/build/outputs/apk/release -name "*.apk")
-            if [[ -z "$debug_apk" || -z "$release_apk" ]]; then
-              echo "Error: APK files not found."
-              exit 1
-            fi
+        # - name: Upload Artifacts
+        #   id: upload_artifacts
+        #   run: |
+        #     set -e  # Exit immediately if any command returns a non-zero status
+        #     release_tag="v.${{ env.VERSION_NAME }}"
+        #     debug_apk=$(find app/build/outputs/apk/debug -name "*.apk")
+        #     release_apk=$(find app/build/outputs/apk/release -name "*.apk")
+        #     if [[ -z "$debug_apk" || -z "$release_apk" ]]; then
+        #       echo "Error: APK files not found."
+        #       exit 1
+        #     fi
 #            gh release upload $release_tag $debug_apk $release_apk --clobber
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # env:
+          #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
