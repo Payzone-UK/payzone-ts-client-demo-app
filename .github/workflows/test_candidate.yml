@@ -110,7 +110,7 @@ jobs:
           run : echo "${{ env.RELEASE_EXISTS }}"
         - name: Create or Update Release
           id: create_or_update_release
-          if: ${{ env.RELEASE_EXISTS }} == 'false'
+          if: ${{ env.RELEASE_EXISTS }} == false
           run: |
             echo "New release"
 #            gh release create "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
@@ -119,7 +119,7 @@ jobs:
 
         - name: Update Release
           id: update_release
-          if: ${{ env.RELEASE_EXISTS }} == 'true'
+          if: ${{ env.RELEASE_EXISTS }} == true
           run: |
             echo "Update release"
 #            gh release edit "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
