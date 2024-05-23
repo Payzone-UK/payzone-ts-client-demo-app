@@ -102,9 +102,12 @@ jobs:
             else
               echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
             fi
+            echo "${{ env.RELEASE_EXISTS }}"
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        - name: Create or Update Release
+          id: check_release_tag
+          run : echo "${{ env.RELEASE_EXISTS }}"
         - name: Create or Update Release
           id: create_or_update_release
           if: ${{ env.RELEASE_EXISTS }} == 'false'
