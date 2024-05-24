@@ -114,7 +114,6 @@ jobs:
             if env.RELEASE_EXISTS == false
               echo "New release"
               # gh release create "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
-            fi
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
