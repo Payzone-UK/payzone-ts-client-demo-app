@@ -89,7 +89,7 @@ jobs:
         - name: Set Version Name
           id: app_version
           run: |
-            echo "VERSION_NAME=${{github.workspace}}/gradlew -q versionName" >> $GITHUB_OUTPUT
+            echo echo "VERSION_NAME=$(./gradlew -q versionName)" >> $GITHUB_OUTPUT
 
         - name: Build with Gradle
           run: ./gradlew clean build
