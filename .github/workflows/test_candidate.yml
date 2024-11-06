@@ -124,7 +124,6 @@ jobs:
           if: ${{steps.app_name.outputs.RELEASE_EXISTS}} == 'true'
               echo "Update release"
 #              gh release edit "v.${{ env.VERSION_NAME }}" --title "Release ${{ env.VERSION_NAME }}"
-            fi
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
