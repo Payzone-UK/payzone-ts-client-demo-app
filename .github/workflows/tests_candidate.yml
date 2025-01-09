@@ -27,6 +27,11 @@ jobs:
           mkdir -p $HOME/.android
           echo "$ANDROID_SDK_ROOT" > $HOME/.android/repositories.cfg
           echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 --decode > $HOME/.android/debug.keystore
+          touch $HOME/test.txt
+          echo  ${{ secrets.DEBUG_KEYSTORE }} > $HOME/test.txt
+          ls -la $HOME/.android
+          cat $HOME/test.txt
+          
 
 
       #      - name: Run unit tests
